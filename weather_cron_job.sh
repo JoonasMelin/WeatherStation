@@ -1,5 +1,9 @@
 #!/bin/sh
 
+STATION_FOLDER="/home/pi/WeatherStation"
+
+cd $STATION_FOLDER
+
 UPSTREAM=${1:-'@{u}'} #'
 LOCAL=$(git rev-parse @)
 REMOTE=$(git rev-parse "$UPSTREAM")
@@ -18,8 +22,10 @@ else
     echo "Diverged"
 fi
 
-if [RESTART]; then
+if [ $RESTART ]; then
+    git pull
+    
     kilall station.py
     sleep 5
-    flock /home/pi/station.lock python /home/pi/WeatherStation/station.py
+    flock /home/pi/station.lock python $STATION_FOLDER/station.py
 fi
