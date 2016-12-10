@@ -4,31 +4,18 @@ STATION_FOLDER="/home/pi/WeatherStation"
 
 cd $STATION_FOLDER
 
-UPSTREAM=${1:-'@{u}'} #'
-LOCAL=$(git rev-parse @)
-REMOTE=$(git rev-parse "$UPSTREAM")
-BASE=$(git merge-base @ "$UPSTREAM")
+MD5_ORIG=$(md5sum $STATION_FOLDER/station.py)
 
-RESTART=false
+git pull
 
-if [ $LOCAL = $REMOTE ]; then
-    echo "Up-to-date"
-elif [ $LOCAL = $BASE ]; then
-    echo "Need to pull"
-    RESTART=true
-elif [ $REMOTE = $BASE ]; then
-    echo "Need to push"
-else
-    echo "Diverged"
-fi
+MD5_PULL=$(md5sum $STATION_FOLDER/station.py)
 
-if [ "$RESTART" = true ]; then
-    git pull
-
-    kilall station.py
+if [ $MD5_PULL !=  $MD5_ORIG ]; then
+    echo "Killing the process"
+    pkill -f station.py
     sleep 5
     rm $STATION_FOLDER/station.lock
 fi
 
-echo "Starting the process with flock"
+echo "Attempting to start the process with flock"
 flock $STATION_FOLDER/station.lock python $STATION_FOLDER/station.py
