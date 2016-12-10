@@ -165,7 +165,7 @@ def main():
             'x': [], 'y': [], 'type': 'scatter',
             'stream': {
                 'token': token,
-                'maxpoints': 20000
+                'maxpoints': 100000
             }
         }], filename=name)
 
