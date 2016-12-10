@@ -30,4 +30,5 @@ if [ "$RESTART" = true ]; then
     rm $STATION_FOLDER/station.lock
 fi
 
+echo "Starting the process with flock"
 flock $STATION_FOLDER/station.lock python $STATION_FOLDER/station.py
