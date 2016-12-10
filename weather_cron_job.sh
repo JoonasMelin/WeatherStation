@@ -10,7 +10,7 @@ git pull
 
 MD5_PULL=$(md5sum $STATION_FOLDER/station.py)
 
-if [ $MD5_PULL !=  $MD5_ORIG ]; then
+if [ "$MD5_PULL" !=  "$MD5_ORIG" ]; then
     echo "Killing the process"
     pkill -f station.py
     sleep 5
