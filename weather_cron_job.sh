@@ -22,10 +22,12 @@ else
     echo "Diverged"
 fi
 
-if [ $RESTART ]; then
+if [ "$RESTART" = true ]; then
     git pull
-    
+
     kilall station.py
     sleep 5
-    flock /home/pi/station.lock python $STATION_FOLDER/station.py
+    rm $STATION_FOLDER/station.lock
 fi
+
+flock $STATION_FOLDER/station.lock python $STATION_FOLDER/station.py
