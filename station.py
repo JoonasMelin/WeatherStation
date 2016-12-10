@@ -209,7 +209,7 @@ def main():
         stream_pressure.write({'x': datetime.datetime.now(), 'y': pressure})
         stream_preshum.write({'x': temp_1, 'y': humidity})
 
-        time.sleep(1)
+        time.sleep(2)
 
 if __name__=="__main__":
     main()
