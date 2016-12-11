@@ -273,6 +273,7 @@ def make_stream(stamps, y_data, name, token, max_data_points):
 
 @rate_limited(20, mode='kill') 
 def open_streams(plotly_user_config, names, data, max_data_points):
+    print("Attempting to open the streams to plotly")
     stamps = list(data.stamps)
     tokens = plotly_user_config['plotly_streaming_tokens']
 
@@ -295,8 +296,10 @@ def open_streams(plotly_user_config, names, data, max_data_points):
 def main():
     setup()
 
+    print("Starting the weatherstation")
     #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
     max_data_points = 15 # Roughly 4 samples/min to keep a years worth of data
+    data = {}
     data.stamps = deque([], maxlen=max_data_points) 
     data.temp1 = RingBuffer(size_max=max_data_points)
     data.temp2 = RingBuffer(size_max=max_data_points)
@@ -335,7 +338,7 @@ def main():
 
         if not successfully_opened:
             try:
-                streams = open_streams(plotly_user_config, names, data)
+                streams = open_streams(plotly_user_config, names, data, max_data_points)
                 successfully_opened = True
             except:
                 print("Could not open the streams:", sys.exc_info()[0])
