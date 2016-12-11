@@ -274,14 +274,14 @@ def make_stream(stamps, y_data, name, token, max_data_points):
 @rate_limited(20, mode='kill') 
 def open_streams(plotly_user_config, names, data, max_data_points):
     print("Attempting to open the streams to plotly")
-    stamps = list(data.stamps)
+    stamps = list(data['stamps'])
     tokens = plotly_user_config['plotly_streaming_tokens']
 
-    url_temp1 = make_stream(stamps, list(data.temp1.get_all()), names[0], tokens[0], max_data_points)
-    url_temp2 = make_stream(stamps, list(data.temp2.get_all()), names[1], tokens[1], max_data_points)
-    url_temp3 = make_stream(stamps, list(data.temp3.get_all()), names[2], tokens[2], max_data_points)
-    url_humidity = make_stream(stamps, list(data.humidity.get_all()), names[3], tokens[3], max_data_points)
-    url_pressure = make_stream(stamps, list(data.pressure.get_all()), names[4], tokens[4], max_data_points)
+    url_temp1 = make_stream(stamps, list(data['temp1'].get_all()), names[0], tokens[0], max_data_points)
+    url_temp2 = make_stream(stamps, list(data['temp2'].get_all()), names[1], tokens[1], max_data_points)
+    url_temp3 = make_stream(stamps, list(data['temp3'].get_all()), names[2], tokens[2], max_data_points)
+    url_humidity = make_stream(stamps, list(data['humidity'].get_all()), names[3], tokens[3], max_data_points)
+    url_pressure = make_stream(stamps, list(data['pressure'].get_all()), names[4], tokens[4], max_data_points)
 
     stream_list = []
     for token in plotly_user_config['plotly_streaming_tokens']:
@@ -300,12 +300,12 @@ def main():
     #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
     max_data_points = 15 # Roughly 4 samples/min to keep a years worth of data
     data = {}
-    data.stamps = deque([], maxlen=max_data_points) 
-    data.temp1 = RingBuffer(size_max=max_data_points)
-    data.temp2 = RingBuffer(size_max=max_data_points)
-    data.temp3 = RingBuffer(size_max=max_data_points)
-    data.humidity = RingBuffer(size_max=max_data_points)
-    data.pressure = RingBuffer(size_max=max_data_points)
+    data['stamps'] = deque([], maxlen=max_data_points) 
+    data['temp1'] = RingBuffer(size_max=max_data_points)
+    data['temp2'] = RingBuffer(size_max=max_data_points)
+    data['temp3'] = RingBuffer(size_max=max_data_points)
+    data['humidity'] = RingBuffer(size_max=max_data_points)
+    data['pressure'] = RingBuffer(size_max=max_data_points)
 
     with open('/home/pi/station/.config.json') as config_file:
         plotly_user_config = json.load(config_file)
@@ -329,12 +329,12 @@ def main():
         print("Temp1: %s, Temp2: %s, Temp pressure sens: %s, Humidity: %s, Pressure: %s"% (temp_1, temp_2, temperature_pres, humidity, pressure))
 
         # Saving all the data to the queue
-        data.stamps.append(datetime.datetime.now())
-        data.temp1.append(temp_1)
-        data.temp2.append(temp_2)
-        data.temp3.append(temperature)
-        data.humidity.append(temp_1)
-        data.pressure.append(pressure)
+        data['stamps'].append(datetime.datetime.now())
+        data['temp1'].append(temp_1)
+        data['temp2'].append(temp_2)
+        data['temp3'].append(temperature)
+        data['humidity'].append(temp_1)
+        data['pressure'].append(pressure)
 
         if not successfully_opened:
             try:
