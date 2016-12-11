@@ -322,7 +322,7 @@ def main():
         data['temp1'].append(temp_1)
         data['temp2'].append(temp_2)
         data['temp3'].append(temperature)
-        data['humidity'].append(temp_1)
+        data['humidity'].append(humidity)
         data['pressure'].append(pressure)
 
         if not successfully_opened:
@@ -349,7 +349,7 @@ def main():
                 streams[2].write({'x': datetime.datetime.now(), 'y': temperature})
                 streams[3].write({'x': datetime.datetime.now(), 'y': humidity})
                 streams[4].write({'x': datetime.datetime.now(), 'y': pressure})
-                streams[5].write({'x': temp_1, 'y': humidity, 'mode': 'markers'})
+                streams[5].write({'x': temp_1, 'y': humidity})
             except:
                 print("Could not print to streams:", sys.exc_info()[0])
                 successfully_opened = False
