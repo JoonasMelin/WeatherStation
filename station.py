@@ -249,11 +249,6 @@ def open_streams(plotly_user_config, names, data, max_data_points):
 
     return stream_list
 
-def plot_to_disk(data_x, data_y, name):
-    # Create traces
-    return
-
-
 def main():
     print("Setting up the sensors")
     setup()
@@ -358,10 +353,6 @@ def main():
             except:
                 print("Could not print to streams:", sys.exc_info()[0])
                 successfully_opened = False
-
-        #print("Attempting to create plots to disk")
-        #plot_to_disk(list(data['stamps']), list(data['temp1'].get_all()), "Temp1")
-
 
         # Checking if we should dump the data to disk
         duration_since_last_save = datetime.datetime.now() - last_save_call
