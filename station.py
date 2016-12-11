@@ -217,7 +217,7 @@ def make_stream(stamps, y_data, name, token, max_data_points):
             'token': token,
             'maxpoints': max_data_points
         }
-    }], filename=name)
+    }], filename=name, auto_open=False)
 
     print("View your streaming graph here: %s "% url)
     print("\n\n")
