@@ -16,7 +16,13 @@ import Adafruit_DHT
 
 import cPickle as pickle
 from collections import deque
+from collections import itertools
 
+import time
+import threading
+from functools import wraps
+
+import numpy as np
 DEVICE = 0x77 # Default device I2C address
 
 #bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
@@ -29,6 +35,52 @@ GPIO.setmode(GPIO.BOARD)
 pull_up_pin = 7
 humidity_pin = 15
 light_pin = 16
+
+
+class RingBuffer(object):
+    def __init__(self, size_max, default_value=0.0, dtype=float):
+        """initialization"""
+        self.size_max = size_max
+
+        self._data = np.empty(size_max, dtype=dtype)
+        self._data.fill(default_value)
+
+        self.size = 0
+
+    def append(self, value):
+        """append an element"""
+        self._data = np.roll(self._data, 1)
+        self._data[0] = value 
+
+        self.size += 1
+
+        if self.size == self.size_max:
+            self.__class__  = RingBufferFull
+
+    def get_all(self):
+        """return a list of elements from the oldest to the newest"""
+        return(self._data)
+
+    def get_partial(self):
+        return(self.get_all()[0:self.size])
+
+    def __getitem__(self, key):
+        """get element"""
+        return(self._data[key])
+
+    def __repr__(self):
+        """return string representation"""
+        s = self._data.__repr__()
+        s = s + '\t' + str(self.size)
+        s = s + '\t' + self.get_all()[::-1].__repr__()
+        s = s + '\t' + self.get_partial()[::-1].__repr__()
+        return(s)
+
+class RingBufferFull(RingBuffer):
+    def append(self, value):
+        """append an element when buffer is full"""
+        self._data = np.roll(self._data, 1)
+        self._data[0] = value
 
 # create discharge function for reading capacitor data
 def setup():
@@ -150,45 +202,117 @@ def readBmp180(addr=DEVICE):
 
     return (temperature/10.0,pressure/ 100.0)
 
+def rate_limited(max_per_second, mode='wait', delay_first_call=False):
+    """
+    Decorator that make functions not be called faster than
+
+    set mode to 'kill' to just ignore requests that are faster than the 
+    rate.
+
+    set delay_first_call to True to delay the first call as well
+    """
+    lock = threading.Lock()
+    min_interval = 1.0 / float(max_per_second)
+    def decorate(func):
+        last_time_called = [0.0]
+        @wraps(func)
+        def rate_limited_function(*args, **kwargs):
+            def run_func():
+                lock.release()
+                ret = func(*args, **kwargs)
+                last_time_called[0] = time.perf_counter()
+                return ret
+            lock.acquire()
+            elapsed = time.perf_counter() - last_time_called[0]
+            left_to_wait = min_interval - elapsed
+            if delay_first_call:    
+                if left_to_wait > 0:
+                    if mode == 'wait':
+                        time.sleep(left_to_wait)
+                        return run_func()
+                    elif mode == 'kill':
+                        lock.release()
+                        return
+                else:
+                    return run_func()
+            else:
+                # Allows the first call to not have to wait
+                if not last_time_called[0] or elapsed > min_interval:   
+                    return run_func()       
+                elif left_to_wait > 0:
+                    if mode == 'wait':
+                        time.sleep(left_to_wait)
+                        return run_func()
+                    elif mode == 'kill':
+                        lock.release()
+                        return
+        return rate_limited_function
+    return decorate
+
+
+def print_num_wait(num):
+    print (num )
+
+
+def make_stream(stamps, y_data, name, token, max_data_points):
+    print(token)
+    # Plot all the history data as well
+    
+    url = py.plot([
+    {
+        'x': stamps, 'y': y_data, 'type': 'scatter',
+        'stream': {
+            'token': token,
+            'maxpoints': 100000
+        }
+    }], filename=name)
+
+    print("View your streaming graph here: %s "% url)
+    print("\n\n")
+
+    return url
+
+@rate_limited(20, mode='kill') 
+def open_streams(plotly_user_config, names, data, max_data_points):
+    stamps = list(data.stamps)
+    tokens = plotly_user_config['plotly_streaming_tokens']
+
+    url_temp1 = make_stream(stamps, list(data.temp1.get_all()), names[0], tokens[0], max_data_points)
+    url_temp2 = make_stream(stamps, list(data.temp2.get_all()), names[1], tokens[1], max_data_points)
+    url_temp3 = make_stream(stamps, list(data.temp3.get_all()), names[2], tokens[2], max_data_points)
+    url_humidity = make_stream(stamps, list(data.humidity.get_all()), names[3], tokens[3], max_data_points)
+    url_pressure = make_stream(stamps, list(data.pressure.get_all()), names[4], tokens[4], max_data_points)
+
+    stream_list = []
+    for token in plotly_user_config['plotly_streaming_tokens']:
+        cur_stream = py.Stream(token)
+        cur_stream.open()
+        stream_list.append(cur_stream)
+
+    return stream_list
+
+
+
 def main():
     setup()
+
+    #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
+    max_data_points = 15 # Roughly 4 samples/min to keep a years worth of data
+    data.stamps = deque([], maxlen=max_data_points) 
+    data.temp1 = RingBuffer(size_max=max_data_points)
+    data.temp2 = RingBuffer(size_max=max_data_points)
+    data.temp3 = RingBuffer(size_max=max_data_points)
+    data.humidity = RingBuffer(size_max=max_data_points)
+    data.pressure = RingBuffer(size_max=max_data_points)
 
     with open('/home/pi/station/.config.json') as config_file:
         plotly_user_config = json.load(config_file)
         py.sign_in(plotly_user_config["plotly_username"], plotly_user_config["plotly_api_key"])
 
     names = ['Temperature probe 1(F)', 'Temperature probe 2(F)', 'Temperature case(F)', 'Humidity(%)', 'Pressure(mbar)', 'Pressure vs humidity']
-    for (token, name) in zip(plotly_user_config['plotly_streaming_tokens'], names):
-        print(token)
-        url = py.plot([
-        {
-            'x': [], 'y': [], 'type': 'scatter',
-            'stream': {
-                'token': token,
-                'maxpoints': 100000
-            }
-        }], filename=name)
+    streams = []
+    successfully_opened = False
 
-        print("View your streaming graph here: %s "% url)
-        print("\n\n")
-
-    stream_temp1 = py.Stream(plotly_user_config['plotly_streaming_tokens'][0])
-    stream_temp1.open()
-
-    stream_temp2 = py.Stream(plotly_user_config['plotly_streaming_tokens'][1])
-    stream_temp2.open()
-
-    stream_temp3 = py.Stream(plotly_user_config['plotly_streaming_tokens'][2])
-    stream_temp3.open()
-
-    stream_humidity = py.Stream(plotly_user_config['plotly_streaming_tokens'][3])
-    stream_humidity.open()
-
-    stream_pressure = py.Stream(plotly_user_config['plotly_streaming_tokens'][4])
-    stream_pressure.open()
-
-    stream_preshum = py.Stream(plotly_user_config['plotly_streaming_tokens'][5])
-    stream_preshum.open()
 
     while True:
         temp_1 = read_temperature_from("28-041663688cff")
@@ -202,14 +326,33 @@ def main():
 
         print("Temp1: %s, Temp2: %s, Temp pressure sens: %s, Humidity: %s, Pressure: %s"% (temp_1, temp_2, temperature_pres, humidity, pressure))
 
-        stream_temp1.write({'x': datetime.datetime.now(), 'y': temp_1})
-        stream_temp2.write({'x': datetime.datetime.now(), 'y': temp_2})
-        stream_temp3.write({'x': datetime.datetime.now(), 'y': temperature})
-        stream_humidity.write({'x': datetime.datetime.now(), 'y': humidity})
-        stream_pressure.write({'x': datetime.datetime.now(), 'y': pressure})
-        stream_preshum.write({'x': temp_1, 'y': humidity})
+        # Saving all the data to the queue
+        data.stamps.append(datetime.datetime.now())
+        data.temp1.append(temp_1)
+        data.temp2.append(temp_2)
+        data.temp3.append(temperature)
+        data.humidity.append(temp_1)
+        data.pressure.append(pressure)
 
-        time.sleep(2)
+        if not successfully_opened:
+            try:
+                streams = open_streams(plotly_user_config, names, data)
+                successfully_opened = True
+            except:
+                print("Could not open the streams:", sys.exc_info()[0])
+        else:
+            try: 
+                streams[0].write({'x': datetime.datetime.now(), 'y': temp_1})
+                streams[1].write({'x': datetime.datetime.now(), 'y': temp_2})
+                streams[2].write({'x': datetime.datetime.now(), 'y': temperature})
+                streams[3].write({'x': datetime.datetime.now(), 'y': humidity})
+                streams[4].write({'x': datetime.datetime.now(), 'y': pressure})
+                streams[5].write({'x': temp_1, 'y': humidity, 'mode': 'markers'})
+            except:
+                print("Could not print to streams:", sys.exc_info()[0])
+                successfully_opened = False
+
+        time.sleep(10)
 
 if __name__=="__main__":
     main()
