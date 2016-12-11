@@ -232,8 +232,8 @@ def open_streams(plotly_user_config, names, data, max_data_points):
     stamps = list(data['stamps'])
     tokens = plotly_user_config['plotly_streaming_tokens']
 
-    print(list(data['temp1'].get_partial()))
-    sys.stdout.flush()
+    #print(list(data['temp1'].get_partial()))
+    #sys.stdout.flush()
 
     url_temp1 = make_stream(stamps, list(data['temp1'].get_partial()), names[0], tokens[0], max_data_points)
     url_temp2 = make_stream(stamps, list(data['temp2'].get_partial()), names[1], tokens[1], max_data_points)
