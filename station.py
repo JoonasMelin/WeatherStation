@@ -256,14 +256,14 @@ def main():
     print("Starting the weatherstation")
 
     data_dump_file = "/home/pi/data.dump"
-    with open('/home/pi/station/.config.json') as config_file:
-        plotly_user_config = json.load(config_file)
-
 
     #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
     max_data_points = 40000
 
     resolution_secs = 5
+
+    with open('/home/pi/station/.config.json') as config_file:
+        plotly_user_config = json.load(config_file)
 
     # Loading the data from the disk if it exists
     initialise_data = True
