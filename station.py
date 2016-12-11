@@ -354,7 +354,7 @@ def main():
                 print("Could not print to streams:", sys.exc_info()[0])
                 successfully_opened = False
 
-        time.sleep(10)
+        time.sleep(0.5)
 
 if __name__=="__main__":
     main()
