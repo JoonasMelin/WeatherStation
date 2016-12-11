@@ -16,7 +16,6 @@ import Adafruit_DHT
 
 import cPickle as pickle
 from collections import deque
-from collections import itertools
 
 import time
 import threading
