@@ -67,6 +67,13 @@ class RingBuffer(object):
     def get_partial(self):
         return(self.get_all()[0:self.size])
 
+    def get_up_to(self, max_elems):
+        elem_to = max_elems
+        if max_elems > self.size:
+            elem_to = self.size
+        return(self.get_all()[0:elem_to])
+
+
     def __getitem__(self, key):
         """get element"""
         return(self._data[key])
@@ -108,12 +115,8 @@ def read_temperature_from(sensor_id):
     # Put the decimal point in the right place and display it. 
     temperature = temperature / 1000
 
-    print("temp from %s is %s"% (sensor_id, temperature))
+    #print("temp from %s is %s"% (sensor_id, temperature))
     return temperature
-    # provide a loop to display analog data count value on the screen
-
-
-
 
 def convertToString(data):
     # Simple function to convert binary data into
@@ -229,17 +232,25 @@ def open_streams(plotly_user_config, names, data, max_data_points):
     sys.stdout.flush()
 
     py.sign_in(plotly_user_config["plotly_username"], plotly_user_config["plotly_api_key"])
+
     stamps = list(data['stamps'])
+    data_len = data['temp1'].get_up_to(max_data_points).size
+
+    if len(stamps) < data_len:
+        data_len = len(stamps)
+
+    stamps = stamps[0:data_len]
+
     tokens = plotly_user_config['plotly_streaming_tokens']
 
     #print(list(data['temp1'].get_partial()))
     #sys.stdout.flush()
 
-    url_temp1 = make_stream(stamps, list(data['temp1'].get_partial()), names[0], tokens[0], max_data_points)
-    url_temp2 = make_stream(stamps, list(data['temp2'].get_partial()), names[1], tokens[1], max_data_points)
-    url_temp3 = make_stream(stamps, list(data['temp3'].get_partial()), names[2], tokens[2], max_data_points)
-    url_humidity = make_stream(stamps, list(data['humidity'].get_partial()), names[3], tokens[3], max_data_points)
-    url_pressure = make_stream(stamps, list(data['pressure'].get_partial()), names[4], tokens[4], max_data_points)
+    url_temp1 = make_stream(stamps, list(data['temp1'].get_up_to(data_len)), names[0], tokens[0], max_data_points)
+    url_temp2 = make_stream(stamps, list(data['temp2'].get_up_to(data_len)), names[1], tokens[1], max_data_points)
+    url_temp3 = make_stream(stamps, list(data['temp3'].get_up_to(data_len)), names[2], tokens[2], max_data_points)
+    url_humidity = make_stream(stamps, list(data['humidity'].get_up_to(data_len)), names[3], tokens[3], max_data_points)
+    url_pressure = make_stream(stamps, list(data['pressure'].get_up_to(data_len)), names[4], tokens[4], max_data_points)
 
     stream_list = []
     for token in plotly_user_config['plotly_streaming_tokens']:
@@ -258,7 +269,9 @@ def main():
     data_dump_file = "/home/pi/data.dump"
 
     #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
-    max_data_points = 40000
+    #max_data_points = 40000
+    max_data_points = 150000
+    max_data_points_plot = 10000
 
     resolution_secs = 5
 
@@ -336,7 +349,7 @@ def main():
                 last_call = datetime.datetime.now()
 
                 try:
-                    streams = open_streams(plotly_user_config, names, data, max_data_points)
+                    streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
                     successfully_opened = True
                 except:
                     print("Could not open the streams:", sys.exc_info()[0])
