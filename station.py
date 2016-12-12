@@ -353,8 +353,8 @@ def main():
                 last_call = datetime.datetime.now()
 
                 try:
-                    streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
-                    successfully_opened = True
+                    #streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
+                    #successfully_opened = True
                 except:
                     print("Could not open the streams:", sys.exc_info()[0])
 
