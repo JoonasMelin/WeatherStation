@@ -282,11 +282,15 @@ def main():
     initialise_data = True
     if os.path.isfile(data_dump_file):
         print("Loading the data from the disk dump")
-        with open(data_dump_file, 'rb') as input:
-            data = pickle.load(input)
-            if data['maxlen'] == max_data_points:
-                print("Data has the same amount of data points, not initializing")
-                initialise_data=False
+        try:
+            with open(data_dump_file, 'rb') as input:
+                data = pickle.load(input)
+                if data['maxlen'] == max_data_points:
+                    print("Data has the same amount of data points, not initializing")
+                    initialise_data=False
+        except:
+            print("Loading data failed, re-initialising")
+            initialise_data=True
             
     if initialise_data:
         print("Re-initializing the data")
