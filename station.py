@@ -289,9 +289,9 @@ def print_data_to_html(data):
     plt.plot(time_ax, scipy.signal.medfilt(data['temp3'].get_partial(),filt_l), 'b-')
 
     ax3 = plt.subplot(513)
-    ax4.set_title("Humidity")
-    ax4.xaxis.set_major_locator(dates.HourLocator())
-    ax4.xaxis.set_major_formatter(hfmt)
+    ax3.set_title("Humidity")
+    ax3.xaxis.set_major_locator(dates.HourLocator())
+    ax3.xaxis.set_major_formatter(hfmt)
     plt.plot(time_ax, scipy.signal.medfilt(data['humidity'].get_partial(),filt_l), 'b-')
 
     ax4 = plt.subplot(514)
