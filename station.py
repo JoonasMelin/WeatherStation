@@ -24,7 +24,9 @@ from functools import wraps
 
 import numpy as np
 
-import os  
+import os
+
+import matplotlib.pyplot as plt, mpld3
 
 DEVICE = 0x77 # Default device I2C address
 
@@ -260,6 +262,32 @@ def open_streams(plotly_user_config, names, data, max_data_points):
 
     return stream_list
 
+def print_data_to_html(data):
+    plt.plot([3,1,4,1,5], 'ks-', mec='w', mew=5, ms=20)
+    data_len = data['temp1'].get_partial().size
+
+    plt.figure(1)
+    plt.subplot(611)
+    plt.plot(data['temp1'].get_partial(), 'bo', t2, f(t2), 'k')
+
+    plt.subplot(612)
+    plt.plot(data['temp2'].get_partial(), 'bo', t2, f(t2), 'k')
+
+    plt.subplot(613)
+    plt.plot(data['temp3'].get_partial(), 'bo', t2, f(t2), 'k')
+
+    plt.subplot(614)
+    plt.plot(data['humidity'].get_partial(), 'bo', t2, f(t2), 'k')
+
+    plt.subplot(615)
+    plt.plot(data['pressure'].get_partial(), 'bo', t2, f(t2), 'k')
+
+    plt.subplot(616)
+    plt.plot(data['humidity'].get_partial(), data['pressure'].get_partial(), 'bo', t2, f(t2), 'rx')
+
+    with open("/var/www/html/index.html", 'w+') as output:
+        mpld3.save_html(plt, output, **kwargs)[source]plt
+
 def main():
     print("Setting up the sensors")
     setup()
@@ -352,11 +380,11 @@ def main():
                 print("%s seconds has elapsed, trying the streams again"%duration_since_last.total_seconds())
                 last_call = datetime.datetime.now()
 
-                try:
+                #try:
                     #streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
                     #successfully_opened = True
-                except:
-                    print("Could not open the streams:", sys.exc_info()[0])
+                #except:
+                #    print("Could not open the streams:", sys.exc_info()[0])
 
         else:
             try:
@@ -374,7 +402,7 @@ def main():
         # Checking if we should dump the data to disk
         duration_since_last_save = datetime.datetime.now() - last_save_call
 
-        if duration_since_last_save.total_seconds() < 10:
+        if duration_since_last_save.total_seconds() < 1:
             print("Not saving the data yet")
         else:
             print("Saving the data to disk")
