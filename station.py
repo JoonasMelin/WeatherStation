@@ -286,7 +286,7 @@ def print_data_to_html(data):
     plt.plot(data['humidity'].get_partial(), data['pressure'].get_partial(), 'bo', t2, f(t2), 'rx')
 
     with open("/var/www/html/index.html", 'w+') as output:
-        mpld3.save_html(plt, output, **kwargs)[source]plt
+        mpld3.save_html(plt, output)
 
 def main():
     print("Setting up the sensors")
