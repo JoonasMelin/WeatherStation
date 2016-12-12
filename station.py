@@ -26,7 +26,11 @@ import numpy as np
 
 import os
 
-import matplotlib.pyplot as plt, mpld3
+import matplotlib.pyplot as plt
+import matplotlib.dates as dates
+
+import scipy
+from scipy import signal
 
 DEVICE = 0x77 # Default device I2C address
 
@@ -263,30 +267,49 @@ def open_streams(plotly_user_config, names, data, max_data_points):
     return stream_list
 
 def print_data_to_html(data):
-    plt.plot([3,1,4,1,5], 'ks-', mec='w', mew=5, ms=20)
-    data_len = data['temp1'].get_partial().size
+    stamps = list(data['stamps'])
+    time_ax = dates.date2num(stamps)
+    hfmt = dates.DateFormatter('%m/%d %H:%M')
 
-    plt.figure(1)
-    plt.subplot(611)
-    plt.plot(data['temp1'].get_partial(), 'bo', t2, f(t2), 'k')
+    filt_l = 9
 
-    plt.subplot(612)
-    plt.plot(data['temp2'].get_partial(), 'bo', t2, f(t2), 'k')
+    plt.figure(figsize=(15, 15), dpi=300)
+    ax1 = plt.subplot(511)
+    ax1.set_title("Temperature 1 and 2")
+    ax1.xaxis.set_major_locator(dates.HourLocator())
+    ax1.xaxis.set_major_formatter(hfmt)
+    plt.plot(time_ax, scipy.signal.medfilt(data['temp1'].get_partial(),filt_l), 'b-', time_ax, scipy.signal.medfilt(data['temp2'].get_partial(),filt_l), 'r-')
 
-    plt.subplot(613)
-    plt.plot(data['temp3'].get_partial(), 'bo', t2, f(t2), 'k')
+       
 
-    plt.subplot(614)
-    plt.plot(data['humidity'].get_partial(), 'bo', t2, f(t2), 'k')
+    ax2 = plt.subplot(512)
+    ax2.set_title("Case temperature")
+    ax2.xaxis.set_major_locator(dates.HourLocator())
+    ax2.xaxis.set_major_formatter(hfmt)
+    plt.plot(time_ax, scipy.signal.medfilt(data['temp3'].get_partial(),filt_l), 'b-')
 
-    plt.subplot(615)
-    plt.plot(data['pressure'].get_partial(), 'bo', t2, f(t2), 'k')
+    ax3 = plt.subplot(513)
+    ax4.set_title("Humidity")
+    ax4.xaxis.set_major_locator(dates.HourLocator())
+    ax4.xaxis.set_major_formatter(hfmt)
+    plt.plot(time_ax, scipy.signal.medfilt(data['humidity'].get_partial(),filt_l), 'b-')
 
-    plt.subplot(616)
-    plt.plot(data['humidity'].get_partial(), data['pressure'].get_partial(), 'bo', t2, f(t2), 'rx')
+    ax4 = plt.subplot(514)
+    ax4.set_title("Pressure")
+    ax4.xaxis.set_major_locator(dates.HourLocator())
+    ax4.xaxis.set_major_formatter(hfmt)
+    plt.plot(time_ax, scipy.signal.medfilt(data['pressure'].get_partial(),filt_l), 'b-')
 
-    with open("/var/www/html/index.html", 'w+') as output:
-        mpld3.save_html(plt, output)
+    ax5 = plt.subplot(515)
+    ax5.set_title("Humidity vs pressure")
+    plt.xticks(rotation='vertical')
+    plt.plot(data['humidity'].get_partial(), data['pressure'].get_partial(), 'rx')
+
+    plt.savefig("/var/www/html/data.png")
+
+    #with open("/var/www/html/index.html", 'w+') as output:
+        #mpld3.save_html(plt, output)
+
 
 def main():
     print("Setting up the sensors")
@@ -406,6 +429,7 @@ def main():
             print("Not saving the data yet")
         else:
             print("Saving the data to disk")
+            print_data_to_html(data)
             last_save_call = datetime.datetime.now()
             with open(data_dump_file, 'w+') as output:
                 pickle.dump(data, output, pickle.HIGHEST_PROTOCOL)
