@@ -281,9 +281,10 @@ def print_data_to_html(data):
 
     plt.figure(figsize=(15, 15), dpi=100)
     ax1 = plt.subplot(511)
-    ax1.set_title("Temperature 1 and 2")
+    ax1.set_title(("Temperature 1 and 2, updated at %s"%datetime.datetime.now() ))
     ax1.xaxis.set_major_locator(dates.HourLocator())
     ax1.xaxis.set_major_formatter(hfmt)
+    plt.xticks(rotation='vertical')
     plt.plot(time_ax, scipy.signal.medfilt(data['temp1'].get_partial(),filt_l), 'b-', time_ax, scipy.signal.medfilt(data['temp2'].get_partial(),filt_l), 'r-')
 
        
@@ -292,18 +293,21 @@ def print_data_to_html(data):
     ax2.set_title("Case temperature")
     ax2.xaxis.set_major_locator(dates.HourLocator())
     ax2.xaxis.set_major_formatter(hfmt)
+    plt.xticks(rotation='vertical')
     plt.plot(time_ax, scipy.signal.medfilt(data['temp3'].get_partial(),filt_l), 'b-')
 
     ax3 = plt.subplot(513)
     ax3.set_title("Humidity")
     ax3.xaxis.set_major_locator(dates.HourLocator())
     ax3.xaxis.set_major_formatter(hfmt)
+    plt.xticks(rotation='vertical')
     plt.plot(time_ax, scipy.signal.medfilt(data['humidity'].get_partial(),filt_l), 'b-')
 
     ax4 = plt.subplot(514)
     ax4.set_title("Pressure")
     ax4.xaxis.set_major_locator(dates.HourLocator())
     ax4.xaxis.set_major_formatter(hfmt)
+    plt.xticks(rotation='vertical')
     plt.plot(time_ax, scipy.signal.medfilt(data['pressure'].get_partial(),filt_l), 'b-')
 
     ax5 = plt.subplot(515)
