@@ -279,7 +279,7 @@ def print_data_to_html(data):
 
     filt_l = 9
 
-    plt.figure(figsize=(15, 15), dpi=300)
+    plt.figure(figsize=(15, 15), dpi=100)
     ax1 = plt.subplot(511)
     ax1.set_title("Temperature 1 and 2")
     ax1.xaxis.set_major_locator(dates.HourLocator())
@@ -327,7 +327,7 @@ def main():
 
     #max_data_points = 15000000 # Roughly 4 samples/min to keep a years worth of data
     #max_data_points = 40000
-    max_data_points = 150000
+    max_data_points = 100000
     max_data_points_plot = 10000
 
     resolution_secs = 5
