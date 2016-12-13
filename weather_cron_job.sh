@@ -18,4 +18,4 @@ if [ "$MD5_PULL" !=  "$MD5_ORIG" ]; then
 fi
 
 echo "Attempting to start the process with flock"
-flock -xn $STATION_FOLDER/station.lock $STATION_FOLDER/station.py &> $STATION_FOLDER/stdout.txt
+flock -xn $STATION_FOLDER/station.lock $STATION_FOLDER/station.py
