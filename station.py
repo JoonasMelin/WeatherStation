@@ -275,7 +275,7 @@ def open_streams(plotly_user_config, names, data, max_data_points):
 def print_data_to_html(data):
     stamps = list(data['stamps'])
     time_ax = dates.date2num(stamps)
-    hfmt = dates.DateFormatter('%m/%d %H:%M')
+    hfmt = dates.DateFormatter('%H:%M - %m/%d')
 
     filt_l = 9
 
