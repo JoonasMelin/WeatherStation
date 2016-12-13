@@ -403,11 +403,11 @@ def main():
                 print("%s seconds has elapsed, trying the streams again"%duration_since_last.total_seconds())
                 last_call = datetime.datetime.now()
 
-                #try:
-                    #streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
-                    #successfully_opened = True
-                #except:
-                #    print("Could not open the streams:", sys.exc_info()[0])
+                try:
+                    streams = open_streams(plotly_user_config, names, data, max_data_points_plot)
+                    successfully_opened = True
+                except:
+                    print("Could not open the streams:", sys.exc_info()[0])
 
         else:
             try:
@@ -425,7 +425,7 @@ def main():
         # Checking if we should dump the data to disk
         duration_since_last_save = datetime.datetime.now() - last_save_call
 
-        if duration_since_last_save.total_seconds() < 1:
+        if duration_since_last_save.total_seconds() < 60:
             print("Not saving the data yet")
         else:
             print("Saving the data to disk")
