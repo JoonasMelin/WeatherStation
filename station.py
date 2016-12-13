@@ -314,7 +314,7 @@ def print_data_to_html(data):
     plt.savefig("/var/www/html/data.png")
 
     # Cleaning up
-    plt.clear()
+    plt.clf()
     plt.close()
 
     #with open("/var/www/html/index.html", 'w+') as output:
