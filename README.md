@@ -1,6 +1,8 @@
 # WeatherStation
 Open source weatherstation developed in IoT style. Publishes data to PlotLy and local web server.
 
+![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
+
 # Sensors
 The station is based on Rasberry Pi Zero platform, which means that almost any digital sensor can be easily integrated into the platform. With additional ADC modules, analog sensors could also be included.
 
