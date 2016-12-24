@@ -19,3 +19,12 @@ The weatherstation should be paired with a corresponding mini wifi router so tha
 
 ## Viewing the data
 
+The data can be viewed at https://plot.ly/dashboard/BeckyWeather:10/view by anyone. The internal web server can be accessed from the mini routers wifi network and can be seen at http://192.168.8.100
+
+## Configuring
+
+The main script of the program is fairly rudimentary and more of a proof of concept, but it does offer few options for configuring the data. The most important value affecting the usage is the 
+
+  resolution_secs = 5
+
+Parameter which determines how often the data is captured. This affects how much history is retained as plotly supports roughly 10 000 data points and the internal web server holds roughly 10 times more. Increasing this delay will make the data more sparse and enables the user to see much further into the history but hides weather events that happen quickly.
