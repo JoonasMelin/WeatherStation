@@ -1,7 +1,7 @@
 # WeatherStation
 Open source weatherstation developed in IoT style. Publishes data to PlotLy and local web server.
 
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
+![The bread board illustration](https://github.com/JoonasMelin/WeatherStation/blob/master/Schematic_bb.png)
 
 # Sensors
 The station is based on Rasberry Pi Zero platform, which means that almost any digital sensor can be easily integrated into the platform. With additional ADC modules, analog sensors could also be included.
@@ -30,3 +30,10 @@ The main script of the program is fairly rudimentary and more of a proof of conc
   resolution_secs = 5
 
 Parameter which determines how often the data is captured. This affects how much history is retained as plotly supports roughly 10 000 data points and the internal web server holds roughly 10 times more. Increasing this delay will make the data more sparse and enables the user to see much further into the history but hides weather events that happen quickly.
+
+# Schematic
+The actual construction of this particular project was done on a strip board but any type of prototype board will do. Solderless breadboards are recommended for the prototyping phase.
+
+The schematic of the project can be found below:
+![The bread board illustration](https://github.com/JoonasMelin/WeatherStation/blob/master/Schematic_schem.png)
+
